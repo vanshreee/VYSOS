@@ -56,12 +56,13 @@ plt.set_cmap('viridis')
 print("Shape of stacked bias-frames = ",np.shape(biasarr)) #should be 5 x 80 x 512
 biasmed = np.median(biasarr, axis=0)
 print("Shape of the median image generated = ",np.shape(biasmed))
-vmedian = np.nanmedian(biasmed)
 
+# vmedian = np.nanmedian(biasmed)
 # plt.title("Combined Median bias frame")
 # plt.imshow(biasmed,vmin=0.5*np.abs(vmedian), vmax=1.5*np.abs(vmedian), aspect=2)
 # plt.colorbar()
 # plt.show()
+
 print("Mean of "+ "combined bias frame" + " is " + str(np.mean(biasmed)) + " counts ")
 
 
@@ -79,7 +80,7 @@ for i in range(10,16):# <---
     rootname = path+str(i)+str(filters[0])
     rootlist = np.append(rootlist,rootname)
 
-print(rootlist)
+# print(rootlist)
 
 # 
 #######################################
@@ -119,7 +120,19 @@ for rootname in rootlist:
 
         ### show image
 
+    # ### show image 
+    # imagedata = fits.getdata(path+'aug08-0003V.fit')
+    # plt.imshow(imagedata)#, cmap='gray')
+    # plt.colorbar()
+    print('image mean',np.mean(image_data))
+
         ### show bias subtracted image
+
+    biassubtractedimage = image_data - biasmed
+    # plt.imshow(biassubtractedimage)#, cmap='gray')
+    # plt.colorbar()
+    print('bias subtracted image mean',np.mean(biassubtractedimage))
+
 
 #  perform  aperture photometry
 #######################################
