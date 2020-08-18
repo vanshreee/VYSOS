@@ -26,41 +26,31 @@ from astropy.wcs import WCS
 path = '/usr/local/Cellar/astrometry-net/0.82/data/aug08-00' # <---
 filters = ['V','R','i'] # <---
 
-imagelist = np.array([])
-sourcelist = np.array([])
+rootlist = np.array([])
 for i in range(1,10):# <---
-    imagename = path+'0'+str(i)+str(filters[0])+'.fit' # <---
-    xyname = path+'0'+str(i)+str(filters[0])+'-indx.xyls'
-    #print(imagename)
-    #print(xyname)
-    imagelist = np.append(imagelist,imagename)
-    sourcelist = np.append(sourcelist,xyname)
-
+    rootname = path+'0'+str(i)+str(filters[0])# <---
+    rootlist = np.append(rootlist,rootname)
 
 for i in range(10,16):# <---
-    imagename = path+str(i)+str(filters[0])+'.fit' # <---
-    xyname = path+str(i)+str(filters[0])+'-indx.xyls'
-    #print(imagename)
-    #print(xyname)
-    imagelist = np.append(imagelist,imagename)
-    sourcelist = np.append(sourcelist,xyname)
+    rootname = path+str(i)+str(filters[0])
+    rootlist = np.append(rootlist,rootname)
 
-
-print(imagelist)
-print(sourcelist)
-
+print(rootlist)
 
 #   
 #######################################
 
-for imagename in imagelist:
+for rootname in rootlist:
+    imagename = rootname+'.fit'
+    xysrcname = rootname+'-indx.xyls'
+    
     image_data = fits.getdata(imagename)
-
-for xyname in sourcelist:
-    hdulxy = fits.open(xyname)
+    hdulxy = fits.open(xysrcname)
     xycoords = hdulxy[1].data
     xcoord = [x for x,y in xycoords]
     ycoord = [y for x,y in xycoords]
+
+    #print(xysrcname)
 
 
 #  load bias frames & take median
