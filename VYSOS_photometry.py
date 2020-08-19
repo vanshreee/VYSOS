@@ -148,7 +148,7 @@ for rootname in rootlist:
     phot_table = aperture_photometry(biassubtractedimage,apers)
     for col in phot_table.colnames:
         phot_table[col].info.format = '%.8g' 
-        print(phot_table)
+    print(phot_table)
 
     ### subtract background 
     bkg_mean = phot_table['aperture_sum_1'] / annulus_aperture.area
