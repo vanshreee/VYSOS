@@ -88,8 +88,11 @@ for i in range(10,16):# <---
 for rootname in rootlist:
     imagename = rootname+'.fit'
     xysrcname = rootname+'-indx.xyls'
-    
+
+    hdul = fits.open(imagename)
     image_data = fits.getdata(imagename)
+    im_header = hdul[0].header
+
     hdulxy = fits.open(xysrcname)
     xycoords = hdulxy[1].data
     xcoord = [x for x,y in xycoords]
@@ -136,10 +139,32 @@ for rootname in rootlist:
 
 #  perform  aperture photometry
 #######################################
+    xycoords = np.array(list(xycoords))
+
+    aperture = CircularAperture(xycoords,r=3)
+    annulus_aperture = CircularAnnulus(xycoords, r_in=6., r_out=8.)
+    apers = [aperture, annulus_aperture]
+
+    phot_table = aperture_photometry(biassubtractedimage,apers)
+    for col in phot_table.colnames:
+        phot_table[col].info.format = '%.8g' 
+        print(phot_table)
+
+    ### subtract background 
+    bkg_mean = phot_table['aperture_sum_1'] / annulus_aperture.area
+    bkg_sum = bkg_mean * aperture.area
+    final_sum = phot_table['aperture_sum_0'] - bkg_sum
+    phot_table['residual_aperture_sum'] = final_sum
+    phot_table['residual_aperture_sum'].info.format = '%.8g'
+
+    print('\n')
+    print(phot_table['residual_aperture_sum']) 
 
 
 #  convert to magnitudes 
 #######################################
+    exptime = im_header['EXPOSURE']
+    print('exptime',exptime)
 
 
 #  save outputs in a .txt file 
