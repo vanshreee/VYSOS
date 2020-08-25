@@ -89,10 +89,10 @@ for i in range(10,16):# <---
 # calculate mean src values
 #######################################
 
-# sourcelist = np.array([])
+sourcelist = np.array([])
 
-meansrcsx = np.array([])
-meansrcsy = np.array([])
+# meansrcsx = np.array([])
+# meansrcsy = np.array([])
 
 for rootname in rootlist:
     xysrcname = rootname+'-indx.xyls'
@@ -151,8 +151,6 @@ for rootname in rootlist:
 #  perform  bias subtraction
 #######################################
 
-        ### show image
-
     # ### show image 
     # imagedata = fits.getdata(path+'aug08-0003V.fit')
     # plt.imshow(imagedata)#, cmap='gray')
@@ -199,11 +197,23 @@ for rootname in rootlist:
     exptime = im_header['EXPOSURE']
     print('exptime',exptime)
 
-    
+    counts_array = np.array(phot_table['residual_aperture_sum'])
+    time_array = np.ones(len(counts_array))*exptime
+
+    inst_mags_array = -2.5*np.log10(counts_array/time_array)
+    print('inst_mags_array = ',inst_mags_array)
 
 
 #  save outputs in a .txt file 
 #######################################
+    print('xcenter=',phot_table['xcenter'])
+    print('ycenter=',phot_table['ycenter'])
+
+    print('aperture_sum_0 =',np.array(phot_table['aperture_sum_0']))
+    print('aperture_sum_1 =',np.array(phot_table['aperture_sum_1']))
+
+    print('residual_aperture_sum = ',np.array(phot_table['residual_aperture_sum']))
+    print('inst_mags_array =',inst_mags_array)
 
 
 input(':')
