@@ -2,7 +2,7 @@
 # Pipeline to do photometry on VYSOS targets
 # Vanshree Bhalotia, 2020
 
-################################################################################
+#############################################################################################################
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,7 +19,7 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.wcs import WCS
 
-################################################################################
+#############################################################################################################
 
 #  load bias frames & take median
 #######################################
@@ -65,9 +65,12 @@ print("Shape of the median image generated = ",np.shape(biasmed))
 
 print("Mean of "+ "combined bias frame" + " is " + str(np.mean(biasmed)) + " counts ")
 
+#############################################################################################################
 
-# load images & astrometry outputs 
-#######################################
+# load images & astrometry outputs
+
+#############################################################################################################
+
 path = '/usr/local/Cellar/astrometry-net/0.82/data/aug08-00' # <---
 filters = ['V','R','i'] # <---
 
@@ -82,7 +85,34 @@ for i in range(10,16):# <---
 
 # print(rootlist)
 
-# 
+#######################################
+# calculate mean src values
+#######################################
+
+# sourcelist = np.array([])
+
+meansrcsx = np.array([])
+meansrcsy = np.array([])
+
+for rootname in rootlist:
+    xysrcname = rootname+'-indx.xyls'
+    sourcelist = np.append(sourcelist,xysrcname)
+
+# print(sourcelist)
+# for xysrcname in sourcelist:
+    # filename = xysrcname
+    # row = filename[0,:]
+    # col = filname[0,:]
+    
+    hdulxy = fits.open(xysrcname)
+    xycoords = hdulxy[1].data
+    xcoord = [x for x,y in xycoords]
+    ycoord = [y for x,y in xycoords]
+
+    
+
+#######################################
+# image/sources on by one 
 #######################################
 
 for rootname in rootlist:
@@ -136,13 +166,16 @@ for rootname in rootlist:
     # plt.colorbar()
     print('bias subtracted image mean',np.mean(biassubtractedimage))
 
+#  shift images 
+#######################################
+    
 
 #  perform  aperture photometry
 #######################################
     xycoords = np.array(list(xycoords))
 
-    aperture = CircularAperture(xycoords,r=3)
-    annulus_aperture = CircularAnnulus(xycoords, r_in=6., r_out=8.)
+    aperture = CircularAperture(xycoords,r=5)
+    annulus_aperture = CircularAnnulus(xycoords, r_in=8., r_out=10.)
     apers = [aperture, annulus_aperture]
 
     phot_table = aperture_photometry(biassubtractedimage,apers)
@@ -161,10 +194,12 @@ for rootname in rootlist:
     print(phot_table['residual_aperture_sum']) 
 
 
-#  convert to magnitudes 
+#  convert to magnitudes  
 #######################################
     exptime = im_header['EXPOSURE']
     print('exptime',exptime)
+
+    
 
 
 #  save outputs in a .txt file 
