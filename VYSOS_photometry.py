@@ -29,11 +29,6 @@ for i in range(1,10):
     biasfilenames = np.append(biasfilenames,biasfilename_i)
 biasfilenames = np.append(biasfilenames,'/Users/vanshree/cosmo/bias/bias-0010.fit')
 
-
-# fig = plt.figure(figsize=(20,10))
-# plt.set_cmap('viridis')
-# plt.show()
-
 biasarr = []
 
 for n in range(len(biasfilenames)):
@@ -41,27 +36,12 @@ for n in range(len(biasfilenames)):
     hdubias = fits.open(file)
     imbias = hdubias[0].data
     hdbias = hdubias[0].header
-        
-    # f1 = fig.add_subplot(4,3,n+1)
-    # vmedian = np.nanmedian(imbias)
-    
-    # f1.imshow(np.arcsinh(imbias))
-    # plt.title(biasfilenames[n][10::])
 
     biasarr.append(imbias)
 
-# median bias frame
-plt.set_cmap('viridis')
-
-print("Shape of stacked bias-frames = ",np.shape(biasarr)) #should be 5 x 80 x 512
+# print("Shape of stacked bias-frames = ",np.shape(biasarr)) #should be 5 x 80 x 512
 biasmed = np.median(biasarr, axis=0)
-print("Shape of the median image generated = ",np.shape(biasmed))
-
-# vmedian = np.nanmedian(biasmed)
-# plt.title("Combined Median bias frame")
-# plt.imshow(biasmed,vmin=0.5*np.abs(vmedian), vmax=1.5*np.abs(vmedian), aspect=2)
-# plt.colorbar()
-# plt.show()
+# print("Shape of the median image generated = ",np.shape(biasmed))
 
 print("Mean of "+ "combined bias frame" + " is " + str(np.mean(biasmed)) + " counts ")
 
@@ -83,41 +63,31 @@ for i in range(10,16):# <---
     rootname = path+str(i)+str(filters[0])
     rootlist = np.append(rootlist,rootname)
 
-# print(rootlist)
-
 #######################################
-# calculate mean src values
+# calculate src values for various images
 #######################################
 
-sourcelist = np.array([])
+# sourcelist = np.array([])
 
-# meansrcsx = np.array([])
-# meansrcsy = np.array([])
-
-for rootname in rootlist:
-    xysrcname = rootname+'-indx.xyls'
-    sourcelist = np.append(sourcelist,xysrcname)
-
-# print(sourcelist)
-# for xysrcname in sourcelist:
-    # filename = xysrcname
-    # row = filename[0,:]
-    # col = filname[0,:]
+# for rootname in rootlist:
+#     xysrcname = rootname+'.rdls'
+#     sourcelist = np.append(sourcelist,xysrcname)
     
-    hdulxy = fits.open(xysrcname)
-    xycoords = hdulxy[1].data
-    xcoord = [x for x,y in xycoords]
-    ycoord = [y for x,y in xycoords]
+#     hdulxy = fits.open(xysrcname)
+#     xycoords = hdulxy[1].data
+#     xcoord = [x for x,y in xycoords]
+#     ycoord = [y for x,y in xycoords]
 
+#     for ra in xcoord: 
     
 
 #######################################
-# image/sources on by one 
+# image/sources one by one 
 #######################################
 
 for rootname in rootlist:
     imagename = rootname+'.fit'
-    xysrcname = rootname+'-indx.xyls'
+    xysrcname = rootname+'.rdls'
 
     hdul = fits.open(imagename)
     image_data = fits.getdata(imagename)
@@ -128,43 +98,17 @@ for rootname in rootlist:
     xcoord = [x for x,y in xycoords]
     ycoord = [y for x,y in xycoords]
 
-    # ########## plotting 
-    # theta = np.arange(21)/10*np.pi 
-    # ct = np.cos(theta) 
-    # st = np.sin(theta) 
-    # r = 25
-
-    # fig = plt.figure(figsize=(12,12))
-    
-    # ax = plt.subplot()
-    # ax.imshow(image_data, cmap='viridis', origin='lower')
-    # ax.set_xlabel('Right Ascension')
-    # ax.set_ylabel('Declination')
-
-    # for i in range(len(xcoord)):
-    #     ax.plot(xcoord[i]+r*ct, ycoord[i]+r*st, color='red', lw=2)
-    #     ax.text(xcoord[i]+30, ycoord[i]+30, str(i+1), color='red', fontsize=14)
-
-    # plt.show()
-
 
 #  perform  bias subtraction
 #######################################
 
-    # ### show image 
-    # imagedata = fits.getdata(path+'aug08-0003V.fit')
-    # plt.imshow(imagedata)#, cmap='gray')
-    # plt.colorbar()
     print('image mean',np.mean(image_data))
 
-        ### show bias subtracted image
-
     biassubtractedimage = image_data - biasmed
-    # plt.imshow(biassubtractedimage)#, cmap='gray')
-    # plt.colorbar()
+
     print('bias subtracted image mean',np.mean(biassubtractedimage))
 
-#  shift images 
+#   
 #######################################
     
 
@@ -179,7 +123,7 @@ for rootname in rootlist:
     phot_table = aperture_photometry(biassubtractedimage,apers)
     for col in phot_table.colnames:
         phot_table[col].info.format = '%.8g' 
-    print(phot_table)
+    # print(phot_table)
 
     ### subtract background 
     bkg_mean = phot_table['aperture_sum_1'] / annulus_aperture.area
@@ -195,25 +139,25 @@ for rootname in rootlist:
 #  convert to magnitudes  
 #######################################
     exptime = im_header['EXPOSURE']
-    print('exptime',exptime)
+    # print('exptime',exptime)
 
     counts_array = np.array(phot_table['residual_aperture_sum'])
     time_array = np.ones(len(counts_array))*exptime
 
     inst_mags_array = -2.5*np.log10(counts_array/time_array)
-    print('inst_mags_array = ',inst_mags_array)
+    # print('inst_mags_array = ',inst_mags_array)
 
 
 #  save outputs in a .txt file 
 #######################################
-    print('xcenter=',phot_table['xcenter'])
-    print('ycenter=',phot_table['ycenter'])
+    # print('xcenter=',phot_table['xcenter'])
+    # print('ycenter=',phot_table['ycenter'])
 
-    print('aperture_sum_0 =',np.array(phot_table['aperture_sum_0']))
-    print('aperture_sum_1 =',np.array(phot_table['aperture_sum_1']))
+    # print('aperture_sum_0 =',np.array(phot_table['aperture_sum_0']))
+    # print('aperture_sum_1 =',np.array(phot_table['aperture_sum_1']))
 
-    print('residual_aperture_sum = ',np.array(phot_table['residual_aperture_sum']))
-    print('inst_mags_array =',inst_mags_array)
+    # print('residual_aperture_sum = ',np.array(phot_table['residual_aperture_sum']))
+    # print('inst_mags_array =',inst_mags_array)
 
 
 input(':')
