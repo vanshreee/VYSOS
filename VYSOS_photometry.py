@@ -85,9 +85,13 @@ for i in range(10,16):# <---
 # image/sources one by one 
 #######################################
 
+starlist = np.array([])
+
 for rootname in rootlist:
+    
     imagename = rootname+'.fit'
-    xysrcname = rootname+'.rdls'
+    xysrcname = rootname+'.rdls' # loading RA and Dec
+    print(xysrcname)
 
     hdul = fits.open(imagename)
     image_data = fits.getdata(imagename)
@@ -95,18 +99,36 @@ for rootname in rootlist:
 
     hdulxy = fits.open(xysrcname)
     xycoords = hdulxy[1].data
-    xcoord = [x for x,y in xycoords]
-    ycoord = [y for x,y in xycoords]
+    xcoord = np.array([x for x,y in xycoords])
+    ycoord = np.array([y for x,y in xycoords])
+
+    for i in range(len(rootlist)):
+        ra_i = xcoord[i]
+        dec_i = ycoord[i]
+        
+        radiff = abs(ra_i-xcoord)
+        decdiff = abs(dec_i-ycoord)
+
+        ragap = 0.001666666667 #<-- 6 arseconds in degrees
+        decgap = 0.001666666667 #<--
+        ra_good = abs(ra_i - xcoord)<ragap
+        dec_good = abs(dec_i - ycoord)<decgap
+
+        print(xycoords[ra_good & dec_good])
+        simstar = xycoords[ra_good & dec_good]
+        starlist = np.append(starlist,simstar)
+        # if abs(ra_i-xcoord)>0.5: #and abs(dec_i-ycoord)>0.5:
+        #     continue
 
 
 #  perform  bias subtraction
 #######################################
 
-    print('image mean',np.mean(image_data))
+    #print('image mean',np.mean(image_data))
 
     biassubtractedimage = image_data - biasmed
 
-    print('bias subtracted image mean',np.mean(biassubtractedimage))
+    #print('bias subtracted image mean',np.mean(biassubtractedimage))
 
 #   
 #######################################
@@ -132,8 +154,8 @@ for rootname in rootlist:
     phot_table['residual_aperture_sum'] = final_sum
     phot_table['residual_aperture_sum'].info.format = '%.8g'
 
-    print('\n')
-    print(phot_table['residual_aperture_sum']) 
+    #print('\n')
+    #print(phot_table['residual_aperture_sum']) 
 
 
 #  convert to magnitudes  
